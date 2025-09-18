@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/654/sw.js')
+    .then(registration => {
+      console.log('SW registered successfully:', registration);
+    })
+    .catch(error => {
+      console.log('SW registration failed:', error);
+    });
+}
+
 const ShipCaptainCrewRoller = () => {
   const [dice, setDice] = useState(() => Array(5).fill(0).map(() => Math.floor(Math.random() * 6) + 1));
   const [lockedDice, setLockedDice] = useState([false, false, false, false, false]);
@@ -371,7 +382,20 @@ const ShipCaptainCrewRoller = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center p-4">
+    <>
+      {/* PWA Meta Tags */}
+      <head>
+        <meta name="theme-color" content="#7c3aed" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="manifest" href="/654/manifest.json" />
+        <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzdDM0FFRCIvPgo8cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSJ3aGl0ZSIvPgo8Y2lyY2xlIGN4PSI5IiBjeT0iOSIgcj0iMSIgZmlsbD0iIzdDM0FFRCIvPgo8L3N2Zz4=" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Ship Captain Crew" />
+        <title>Ship Captain Crew - Dice Roller</title>
+      </head>
+      
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center p-4">
       {showMidnight && <Fireworks />}
       
       <div className="text-center mb-8">
