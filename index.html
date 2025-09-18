@@ -98,12 +98,26 @@
         </div>
 
         <!-- Dice Container -->
-        <div class="flex flex-wrap justify-center gap-4 mb-8 max-w-sm sm:max-w-none mx-auto">
-            <button id="die-0" class="die-button"></button>
-            <button id="die-1" class="die-button"></button>
-            <button id="die-2" class="die-button"></button>
-            <button id="die-3" class="die-button"></button>
-            <button id="die-4" class="die-button"></button>
+        <div class="mb-8">
+            <!-- Mobile: 3-2 layout -->
+            <div class="flex justify-center gap-4 mb-4 sm:hidden">
+                <button id="die-0" class="die-button"></button>
+                <button id="die-1" class="die-button"></button>
+                <button id="die-2" class="die-button"></button>
+            </div>
+            <div class="flex justify-center gap-4 sm:hidden">
+                <button id="die-3" class="die-button"></button>
+                <button id="die-4" class="die-button"></button>
+            </div>
+            
+            <!-- Desktop: 5 in a row -->
+            <div class="hidden sm:flex justify-center gap-4">
+                <button id="die-0-desktop" class="die-button"></button>
+                <button id="die-1-desktop" class="die-button"></button>
+                <button id="die-2-desktop" class="die-button"></button>
+                <button id="die-3-desktop" class="die-button"></button>
+                <button id="die-4-desktop" class="die-button"></button>
+            </div>
         </div>
 
         <!-- Status Messages -->
@@ -377,18 +391,33 @@
 
         // Update a single die
         const updateDie = (index) => {
-            const die = document.getElementById(`die-${index}`);
-            
-            if (!die) return;
+            const mobileDie = document.getElementById(`die-${index}`);
+            const desktopDie = document.getElementById(`die-${index}-desktop`);
             
             const isLocked = lockedDice[index];
             const value = dice[index];
             const color = getDieColor(index, value);
             
-            die.className = `die-button ${isLocked ? 'die-locked' : ''} ${isRolling && !isLocked ? 'rolling' : ''} bg-gradient-to-br ${color}`;
-            die.disabled = isRolling || !hasRolled;
-            die.onclick = () => toggleLock(index);
-            die.innerHTML = createDieContent(value);
+            const className = `die-button ${isLocked ? 'die-locked' : ''} ${isRolling && !isLocked ? 'rolling' : ''} bg-gradient-to-br ${color}`;
+            const disabled = isRolling || !hasRolled;
+            const onclick = () => toggleLock(index);
+            const innerHTML = createDieContent(value);
+            
+            // Update mobile version
+            if (mobileDie) {
+                mobileDie.className = className;
+                mobileDie.disabled = disabled;
+                mobileDie.onclick = onclick;
+                mobileDie.innerHTML = innerHTML;
+            }
+            
+            // Update desktop version
+            if (desktopDie) {
+                desktopDie.className = className;
+                desktopDie.disabled = disabled;
+                desktopDie.onclick = onclick;
+                desktopDie.innerHTML = innerHTML;
+            }
         };
 
         // Show fireworks
