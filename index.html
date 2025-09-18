@@ -13,11 +13,47 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
         }
-        .animate-spin {
-            animation: spin 1s linear infinite;
+        .rolling {
+            animation: spin 1s linear infinite !important;
+        }
+        .die-button {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            border: 2px solid;
+            box-shadow: 8px 8px 20px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.1);
+            transform: perspective(300px) rotateX(5deg) rotateY(5deg);
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+        }
+        .die-button:hover:not(:disabled) {
+            transform: perspective(300px) rotateX(5deg) rotateY(5deg) scale(1.05);
+        }
+        .die-button:active:not(:disabled) {
+            transform: perspective(300px) rotateX(5deg) rotateY(5deg) scale(0.95);
+        }
+        .die-locked {
+            box-shadow: 0 0 20px rgba(250, 204, 21, 0.6), 8px 8px 20px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.1) !important;
+            transform: perspective(300px) rotateX(15deg) rotateY(-15deg) !important;
+        }
+        .die-locked::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 16px;
+            border: 4px solid #FBBF24;
+            pointer-events: none;
+        }
+        @media (max-width: 640px) {
+            .die-button {
+                width: 64px;
+                height: 64px;
+            }
         }
         @keyframes ping {
             75%, 100% {
@@ -62,8 +98,16 @@
         </div>
 
         <!-- Dice Container -->
-        <div id="dice-container" class="grid grid-cols-5 gap-4 mb-8">
-            <!-- Dice will be generated here -->
+        <div id="dice-container" class="grid grid-cols-3 sm:grid-cols-5 gap-4 mb-8 justify-items-center">
+            <!-- Row 1: 3 dice on mobile, all 5 on desktop -->
+            <button id="die-0" class="die-button"></button>
+            <button id="die-1" class="die-button"></button>
+            <button id="die-2" class="die-button"></button>
+            <button id="die-3" class="die-button sm:block"></button>
+            <button id="die-4" class="die-button sm:block"></button>
+            <!-- Row 2: 2 dice on mobile, hidden on desktop -->
+            <button id="die-3-mobile" class="die-button sm:hidden col-start-1"></button>
+            <button id="die-4-mobile" class="die-button sm:hidden col-start-3"></button>
         </div>
 
         <!-- Status Messages -->
@@ -307,47 +351,58 @@
             return positions[value] || [];
         };
 
-        // Create die HTML
-        const createDie = (value, index) => {
-            const isLocked = lockedDice[index];
-            const color = getDieColor(index, value);
+        // Create die content (dots)
+        const createDieContent = (value) => {
             const dots = getDieDots(value);
-            
             return `
-                <button 
-                    onclick="toggleLock(${index})"
-                    class="relative w-20 h-20 rounded-lg border-2 shadow-lg transform transition-all duration-300 
-                           ${isRolling && !isLocked ? 'animate-spin' : 'hover:scale-105'}
-                           ${isLocked ? 'shadow-lg shadow-yellow-500/50 ring-4 ring-yellow-400' : 'hover:shadow-xl'}
-                           bg-gradient-to-br ${color} active:scale-95"
-                    style="transform-style: preserve-3d;
-                           transform: ${isLocked ? 'perspective(300px) rotateX(15deg) rotateY(-15deg)' : 'perspective(300px) rotateX(5deg) rotateY(5deg)'};
-                           box-shadow: ${isLocked ? '0 0 20px rgba(250, 204, 21, 0.6), 8px 8px 20px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.1)' : '8px 8px 20px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.1)'}"
-                    ${isRolling || !hasRolled ? 'disabled' : ''}
-                >
-                    <!-- Top face illusion -->
-                    <div class="absolute -top-2 -right-2 w-20 h-20 rounded-lg bg-gradient-to-br from-gray-200 to-gray-400 opacity-40"
-                         style="transform: skew(-15deg, -15deg)"></div>
-                    
-                    <!-- Right face illusion -->
-                    <div class="absolute -bottom-2 -right-2 w-20 h-20 rounded-lg bg-gradient-to-br from-gray-300 to-gray-500 opacity-30"
-                         style="transform: skew(15deg, 15deg)"></div>
-                    
-                    <!-- Main face with dots -->
-                    <div class="absolute inset-1 grid grid-cols-3 grid-rows-3 gap-1 z-10">
-                        ${dots.map(position => `
-                            <div class="w-2.5 h-2.5 bg-gray-800 rounded-full shadow-sm
-                                        ${position === 'top-left' ? 'col-start-1 row-start-1' : ''}
-                                        ${position === 'top-right' ? 'col-start-3 row-start-1' : ''}
-                                        ${position === 'middle-left' ? 'col-start-1 row-start-2' : ''}
-                                        ${position === 'center' ? 'col-start-2 row-start-2' : ''}
-                                        ${position === 'middle-right' ? 'col-start-3 row-start-2' : ''}
-                                        ${position === 'bottom-left' ? 'col-start-1 row-start-3' : ''}
-                                        ${position === 'bottom-right' ? 'col-start-3 row-start-3' : ''}"></div>
-                        `).join('')}
-                    </div>
-                </button>
+                <!-- Top face illusion -->
+                <div class="absolute -top-2 -right-2 w-full h-full rounded-lg bg-gradient-to-br from-gray-200 to-gray-400 opacity-40"
+                     style="transform: skew(-15deg, -15deg)"></div>
+                
+                <!-- Right face illusion -->
+                <div class="absolute -bottom-2 -right-2 w-full h-full rounded-lg bg-gradient-to-br from-gray-300 to-gray-500 opacity-30"
+                     style="transform: skew(15deg, 15deg)"></div>
+                
+                <!-- Main face with dots -->
+                <div class="absolute inset-1 grid grid-cols-3 grid-rows-3 gap-1 z-10">
+                    ${dots.map(position => `
+                        <div class="w-2.5 h-2.5 bg-gray-800 rounded-full shadow-sm
+                                    ${position === 'top-left' ? 'col-start-1 row-start-1' : ''}
+                                    ${position === 'top-right' ? 'col-start-3 row-start-1' : ''}
+                                    ${position === 'middle-left' ? 'col-start-1 row-start-2' : ''}
+                                    ${position === 'center' ? 'col-start-2 row-start-2' : ''}
+                                    ${position === 'middle-right' ? 'col-start-3 row-start-2' : ''}
+                                    ${position === 'bottom-left' ? 'col-start-1 row-start-3' : ''}
+                                    ${position === 'bottom-right' ? 'col-start-3 row-start-3' : ''}"></div>
+                    `).join('')}
+                </div>
             `;
+        };
+
+        // Update a single die
+        const updateDie = (index) => {
+            const die = document.getElementById(`die-${index}`);
+            const mobileDie = document.getElementById(`die-${index}-mobile`);
+            
+            const isLocked = lockedDice[index];
+            const value = dice[index];
+            const color = getDieColor(index, value);
+            
+            // Update main die (desktop and mobile first row)
+            if (die) {
+                die.className = `die-button ${isLocked ? 'die-locked' : ''} ${isRolling && !isLocked ? 'rolling' : ''} bg-gradient-to-br ${color}`;
+                die.disabled = isRolling || !hasRolled;
+                die.onclick = () => toggleLock(index);
+                die.innerHTML = createDieContent(value);
+            }
+            
+            // Update mobile duplicate (for dice 3 and 4)
+            if (mobileDie) {
+                mobileDie.className = `die-button ${isLocked ? 'die-locked' : ''} ${isRolling && !isLocked ? 'rolling' : ''} bg-gradient-to-br ${color} sm:hidden col-start-${index === 3 ? '1' : '3'}`;
+                mobileDie.disabled = isRolling || !hasRolled;
+                mobileDie.onclick = () => toggleLock(index);
+                mobileDie.innerHTML = createDieContent(value);
+            }
         };
 
         // Show fireworks
@@ -379,8 +434,10 @@
 
         // Update UI
         const updateUI = () => {
-            // Update dice
-            document.getElementById('dice-container').innerHTML = dice.map((value, index) => createDie(value, index)).join('');
+            // Update all dice
+            for (let i = 0; i < 5; i++) {
+                updateDie(i);
+            }
             
             // Update roll button
             const rollBtn = document.getElementById('roll-btn');
