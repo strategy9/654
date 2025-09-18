@@ -454,7 +454,7 @@
         };
 
         // Show status message
-        const showStatusMessage = (message, className, duration = 4000, isPermanent = false) => {
+        const showStatusMessage = (message, className, duration = 5000, isPermanent = false) => {
             const statusDiv = document.getElementById('status-messages');
             statusDiv.innerHTML = `<div class="${className} text-sm font-medium text-center max-w-md animate-pulse px-4">${message}</div>`;
             
