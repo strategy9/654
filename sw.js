@@ -1,8 +1,8 @@
 const CACHE_NAME = 'ship-captain-crew-v1.0.0';
 const urlsToCache = [
-  '/654/',
-  '/654/index.html',
-  '/654/manifest.json',
+  '/',
+  '/roll.html',
+  '/manifest.json',
   // Add any CSS files, fonts, or other assets your app uses
   // If you're using external CDNs for fonts or libraries, add them here too
 ];
@@ -92,7 +92,7 @@ self.addEventListener('fetch', event => {
         // If this is a navigation request and we're offline, 
         // return the cached main page
         if (event.request.mode === 'navigate') {
-          return caches.match('/654/');
+          return caches.match('/roll.html');
         }
         
         // For other requests, just let them fail
