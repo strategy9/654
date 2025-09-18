@@ -454,7 +454,7 @@
         };
 
         // Show status message
-        const showStatusMessage = (message, className, duration = 5000, isPermanent = false) => {
+        const showStatusMessage = (message, className, duration = 0, isPermanent = true) => {
             const statusDiv = document.getElementById('status-messages');
             statusDiv.innerHTML = `<div class="${className} text-sm font-medium text-center max-w-md animate-pulse px-4">${message}</div>`;
             
@@ -557,6 +557,7 @@
 
         // Roll dice
         function rollDice() {
+            document.getElementById('status-messages').innerHTML = '';
             if (rollsLeft <= 0 || isRolling || isMidnight) return;
             
             isRolling = true;
@@ -621,13 +622,13 @@
                     if (checkMidnight(newDice, newLocked, newShipCaptainCrew)) {
                         isMidnight = true;
                         showFireworks(10000); // 10 second fireworks!
-                        showStatusMessage('🎉 MIDNIGHT! PERFECT SCORE! 🎉', 'text-yellow-400 text-xl font-bold', 10000, true);
+                        showStatusMessage('🎉 MIDNIGHT! PERFECT SCORE! 🎉', 'text-yellow-400 text-xl font-bold', 0, true);
                     } else {
                         // Show commentary if ship-captain-crew is complete
                         if (newShipCaptainCrew.ship !== -1 && newShipCaptainCrew.captain !== -1 && newShipCaptainCrew.crew !== -1) {
                             const cargoScore = newDice.filter((_, index) => !newLocked[index]).reduce((sum, val) => sum + val, 0);
                             const comment = getCommentary(cargoScore, rollsLeft);
-                            showStatusMessage(comment, 'text-cyan-400');
+                            showStatusMessage(comment, 'text-cyan-400', 0, true);
                         }
                     }
                     
@@ -636,7 +637,7 @@
                         const hasShipCaptainCrew = newLocked.filter(Boolean).length === 3;
                         if (!hasShipCaptainCrew) {
                             setTimeout(() => {
-                                showStatusMessage('No Cargo!', 'text-red-400 text-lg font-bold', 5000);
+                                showStatusMessage('No Cargo!', 'text-red-400 text-lg font-bold', 0, true);
                             }, 500);
                         }
                     }
@@ -652,6 +653,7 @@
 
         // Reset game
         function reset() {
+            document.getElementById('status-messages').innerHTML = '';
             dice = Array(5).fill(0).map(() => Math.floor(Math.random() * 6) + 1);
             lockedDice = [false, false, false, false, false];
             rollsLeft = 3;
