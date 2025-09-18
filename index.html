@@ -121,21 +121,20 @@
         </div>
 
         <!-- Status Messages -->
-        <div id="status-messages" class="h-16 mb-4 flex flex-col items-center justify-center">
+        <div id="status-messages" class="h-20 mb-4 flex flex-col items-center justify-center">
             <!-- Status messages will appear here -->
         </div>
 
         <!-- Ship Captain Crew Status -->
-        <div id="scc-status" class="flex gap-4 mb-6 text-sm">
+        <div id="scc-status" class="flex gap-4 mb-4 text-sm">
             <div id="ship-status" class="px-3 py-1 rounded bg-gray-600 text-gray-300">Ship (6)</div>
             <div id="captain-status" class="px-3 py-1 rounded bg-gray-600 text-gray-300">Captain (5)</div>
             <div id="crew-status" class="px-3 py-1 rounded bg-gray-600 text-gray-300">Crew (4)</div>
         </div>
 
         <!-- Cargo Score -->
-        <div id="cargo-score" class="mb-6 text-center hidden">
-            <div class="text-gray-300 text-sm mb-1">Cargo Score</div>
-            <div id="cargo-value" class="text-4xl font-bold text-yellow-400">0</div>
+        <div id="cargo-score" class="mb-6 text-center h-16 flex flex-col justify-center">
+            <!-- Cargo score will appear here when available -->
         </div>
 
         <!-- Controls -->
@@ -471,12 +470,15 @@
             document.getElementById('crew-status').className = `px-3 py-1 rounded ${shipCaptainCrew.crew !== -1 ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'}`;
             
             // Update cargo score
+            const cargoDiv = document.getElementById('cargo-score');
             if (shipCaptainCrew.ship !== -1 && shipCaptainCrew.captain !== -1 && shipCaptainCrew.crew !== -1) {
                 const cargoScore = dice.filter((_, index) => !lockedDice[index]).reduce((sum, val) => sum + val, 0);
-                document.getElementById('cargo-score').className = 'mb-6 text-center';
-                document.getElementById('cargo-value').textContent = cargoScore;
+                cargoDiv.innerHTML = `
+                    <div class="text-gray-300 text-sm mb-1">Cargo Score</div>
+                    <div class="text-4xl font-bold text-yellow-400">${cargoScore}</div>
+                `;
             } else {
-                document.getElementById('cargo-score').className = 'mb-6 text-center hidden';
+                cargoDiv.innerHTML = '';
             }
         };
 
