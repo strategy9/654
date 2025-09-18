@@ -52,3 +52,11 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+/.vs/654/CopilotIndices/17.14.1091.29919/CodeChunks.db-wal
+/.vs/654/CopilotIndices/17.14.1091.29919/SemanticSymbols.db-wal
+*.vsidx
+/.vs/654/v17/.wsuo
+/.vs/654/v17/DocumentLayout.backup.json
+/.vs/654/v17/DocumentLayout.json
+/.vs/slnx.sqlite
+*.sqlite-journal
