@@ -98,16 +98,12 @@
         </div>
 
         <!-- Dice Container -->
-        <div id="dice-container" class="grid grid-cols-3 sm:grid-cols-5 gap-4 mb-8 justify-items-center">
-            <!-- Row 1: 3 dice on mobile, all 5 on desktop -->
+        <div class="flex flex-wrap justify-center gap-4 mb-8 max-w-sm sm:max-w-none mx-auto">
             <button id="die-0" class="die-button"></button>
             <button id="die-1" class="die-button"></button>
             <button id="die-2" class="die-button"></button>
-            <button id="die-3" class="die-button sm:block"></button>
-            <button id="die-4" class="die-button sm:block"></button>
-            <!-- Row 2: 2 dice on mobile, hidden on desktop -->
-            <button id="die-3-mobile" class="die-button sm:hidden col-start-1"></button>
-            <button id="die-4-mobile" class="die-button sm:hidden col-start-3"></button>
+            <button id="die-3" class="die-button"></button>
+            <button id="die-4" class="die-button"></button>
         </div>
 
         <!-- Status Messages -->
@@ -382,27 +378,17 @@
         // Update a single die
         const updateDie = (index) => {
             const die = document.getElementById(`die-${index}`);
-            const mobileDie = document.getElementById(`die-${index}-mobile`);
+            
+            if (!die) return;
             
             const isLocked = lockedDice[index];
             const value = dice[index];
             const color = getDieColor(index, value);
             
-            // Update main die (desktop and mobile first row)
-            if (die) {
-                die.className = `die-button ${isLocked ? 'die-locked' : ''} ${isRolling && !isLocked ? 'rolling' : ''} bg-gradient-to-br ${color}`;
-                die.disabled = isRolling || !hasRolled;
-                die.onclick = () => toggleLock(index);
-                die.innerHTML = createDieContent(value);
-            }
-            
-            // Update mobile duplicate (for dice 3 and 4)
-            if (mobileDie) {
-                mobileDie.className = `die-button ${isLocked ? 'die-locked' : ''} ${isRolling && !isLocked ? 'rolling' : ''} bg-gradient-to-br ${color} sm:hidden col-start-${index === 3 ? '1' : '3'}`;
-                mobileDie.disabled = isRolling || !hasRolled;
-                mobileDie.onclick = () => toggleLock(index);
-                mobileDie.innerHTML = createDieContent(value);
-            }
+            die.className = `die-button ${isLocked ? 'die-locked' : ''} ${isRolling && !isLocked ? 'rolling' : ''} bg-gradient-to-br ${color}`;
+            die.disabled = isRolling || !hasRolled;
+            die.onclick = () => toggleLock(index);
+            die.innerHTML = createDieContent(value);
         };
 
         // Show fireworks
