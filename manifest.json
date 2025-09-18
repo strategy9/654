@@ -2,12 +2,12 @@
   "name": "Ship Captain Crew Dice Roller",
   "short_name": "Ship Captain Crew",
   "description": "A 5-die roller for the Ship Captain Crew (6-5-4) dice game with auto-locking and sarcastic commentary",
-  "start_url": "/",
+  "start_url": "/654/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#7c3aed",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "/654/",
   "lang": "en",
   "categories": ["games", "entertainment"],
   "icons": [
@@ -29,7 +29,7 @@
       "name": "Roll Dice",
       "short_name": "Roll",
       "description": "Start rolling dice",
-      "url": "/",
+      "url": "/654/",
       "icons": [
         {
           "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMTIiIGZpbGw9IiMxMEI5ODEiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHJ4PSI2IiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSI1NiIgeT0iMTAiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgcng9IjYiIGZpbGw9IndoaXRlIi8+CjxyZWN0IHg9IjMzIiB5PSI1NiIgd2lkdGg9IjMwIiBoZWlnaHQ9IjMwIiByeD0iNiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+",
