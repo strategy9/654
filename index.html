@@ -1,0 +1,509 @@
+import React, { useState, useEffect } from 'react';
+
+const ShipCaptainCrewRoller = () => {
+  const [dice, setDice] = useState(() => Array(5).fill(0).map(() => Math.floor(Math.random() * 6) + 1));
+  const [lockedDice, setLockedDice] = useState([false, false, false, false, false]);
+  const [rollsLeft, setRollsLeft] = useState(3);
+  const [isRolling, setIsRolling] = useState(false);
+  const [showMidnight, setShowMidnight] = useState(false);
+  const [showNoCargo, setShowNoCargo] = useState(false);
+  const [commentary, setCommentary] = useState('');
+  const [showCommentary, setShowCommentary] = useState(false);
+  const [hasRolled, setHasRolled] = useState(false);
+  const [shipCaptainCrew, setShipCaptainCrew] = useState({ ship: -1, captain: -1, crew: -1 });
+
+  // Sarcastic commentary for cargo scores
+  const getCommentary = (score, rollsRemaining) => {
+    const lowScores = {
+      2: [
+        "Snake eyes for cargo? That's... unfortunate.",
+        "2? Even a broken clock is right twice a day.",
+        "Well, at least you got ship-captain-crew... barely.",
+        "Two whole points! Don't spend it all in one place.",
+        "I've seen better cargo on a paper airplane.",
+        "That's not cargo, that's emotional baggage.",
+        "2? Did the dice fall asleep?",
+        "Congratulations on achieving mathematical minimum!"
+      ],
+      3: [
+        "3? That's almost impressive... almost.",
+        "Three points closer to mediocrity!",
+        "Well, it's technically above 2...",
+        "Your cargo hold seems to have a leak.",
+        "3? Even my grandmother rolls better than that.",
+        "That's what we call 'minimalist shipping'.",
+        "Three cheers for three points... or don't.",
+        "I'd call that cargo 'light', very light."
+      ],
+      4: [
+        "4? Now we're getting somewhere... slowly.",
+        "Four points! You're really picking up steam now.",
+        "That's slightly less embarrassing than 3.",
+        "4? Your ship's cargo hold is still mostly empty.",
+        "Well, at least it's not 2... or 3.",
+        "Four points of pure... adequacy.",
+        "I see you've mastered the art of underachievement.",
+        "That cargo wouldn't impress a seagull."
+      ],
+      5: [
+        "5? Right down the middle of 'meh'.",
+        "Five points! Perfectly average, how thrilling.",
+        "5? That's the mathematical definition of 'okay'.",
+        "Your cargo is as exciting as watching paint dry.",
+        "Five! You've achieved supreme ordinariness.",
+        "That's... acceptable, I suppose.",
+        "5? Even the dice seem bored.",
+        "Congratulations on being spectacularly average!"
+      ],
+      6: [
+        "6? Getting warmer, but not exactly hot.",
+        "Six points! Now you're slightly above disappointing.",
+        "6? Your ship's reputation is safe... barely.",
+        "That's almost respectable cargo!",
+        "Six! You're crawling toward competence.",
+        "Not terrible... just not good either.",
+        "6? The dice are showing you mercy.",
+        "Your cargo hold is half-full... or half-empty."
+      ],
+      7: [
+        "7? Now we're talking! Well, whispering anyway.",
+        "Seven! You've graduated from 'pathetic' to 'decent'.",
+        "7? That's actually not completely awful.",
+        "Your cargo finally has some weight to it!",
+        "Seven points! The dice gods are smiling... slightly.",
+        "7? I'd almost call that respectable.",
+        "Now that's what I call 'adequate plus'!",
+        "Seven! Your ship won't sink from shame."
+      ]
+    };
+
+    const goodScores = {
+      8: [
+        "8? Now you're cooking with gas!",
+        "Eight! That's actually pretty solid cargo.",
+        "8? Your ship's looking respectable now.",
+        "That's some quality merchandise right there!",
+        "Eight points! The crew might actually get paid.",
+        "8? I'd stay put if I were you.",
+        "Now THAT's what I call a proper haul!",
+        "Eight! Your cargo hold isn't embarrassing anymore.",
+        "8? Don't get greedy... or do, what do I know?",
+        "That's good enough to brag about at the tavern!"
+      ],
+      9: [
+        "9? Impressive! Don't mess this up.",
+        "Nine! That's legitimately good cargo.",
+        "9? Your ship's captain would be proud.",
+        "That's premium cargo right there!",
+        "Nine points! The dice gods have blessed you.",
+        "9? I'd seriously consider staying put.",
+        "Now that's what successful merchants dream of!",
+        "Nine! Your cargo hold is practically glowing.",
+        "9? Don't push your luck... seriously.",
+        "That cargo could fund a small kingdom!"
+      ],
+      10: [
+        "10? Outstanding! Lock it in, captain!",
+        "Ten! That's top-tier cargo right there.",
+        "10? Your ship is now legendary.",
+        "That's the stuff maritime legends are made of!",
+        "Ten points! The dice have spoken favorably.",
+        "10? Any captain would kill for that cargo.",
+        "Now that's what I call a perfect haul!",
+        "Ten! Your cargo hold couldn't be fuller.",
+        "10? Don't even think about rolling again.",
+        "That cargo is worth its weight in gold!"
+      ],
+      11: [
+        "11? Are you kidding me?! STAY PUT!",
+        "Eleven! That's as good as it gets without midnight!",
+        "11? You've basically won the lottery.",
+        "That cargo is absolutely magnificent!",
+        "Eleven points! The universe owes you a favor.",
+        "11? Don't you dare roll again!",
+        "That's the kind of cargo that starts empires!",
+        "Eleven! Your ship is now the stuff of legends.",
+        "11? I'd retire on that cargo!",
+        "That's so good it's almost illegal!"
+      ]
+    };
+
+    const scoreComments = score <= 7 ? lowScores[score] : goodScores[score];
+    const randomComment = scoreComments[Math.floor(Math.random() * scoreComments.length)];
+
+    if (rollsRemaining > 0) {
+      if (score >= 8) {
+        const stayAdvice = [
+          " Maybe quit while you're ahead?",
+          " Don't let greed be your downfall!",
+          " Sometimes the best move is no move.",
+          " Your future self will thank you for staying.",
+          " Why risk perfection?",
+          " The dice giveth, and the dice taketh away...",
+          " Smart captains know when to dock.",
+          " Fortune favors the cautious... sometimes."
+        ];
+        return randomComment + stayAdvice[Math.floor(Math.random() * stayAdvice.length)];
+      } else {
+        const rollAdvice = [
+          " Might want to try again...",
+          " Surely the dice can do better!",
+          " Roll again, what's the worst that could happen?",
+          " Your cargo hold has room for improvement.",
+          " The dice are just warming up!",
+          " Fortune favors the bold... hopefully.",
+          " Give those dice another chance!",
+          " Your ship deserves better cargo!"
+        ];
+        return randomComment + rollAdvice[Math.floor(Math.random() * rollAdvice.length)];
+      }
+    } else {
+      const finalComments = [
+        " That's your final haul!",
+        " And that's all she wrote!",
+        " No more chances, captain!",
+        " That cargo is your destiny!",
+        " The voyage ends here!",
+        " Time to head to port!",
+        " That's what you're stuck with!",
+        " Hope you're happy with that haul!"
+      ];
+      return randomComment + finalComments[Math.floor(Math.random() * finalComments.length)];
+    }
+  };
+  const checkMidnight = (diceValues, locked, scc) => {
+    // Must have ship-captain-crew locked
+    if (scc.ship === -1 || scc.captain === -1 || scc.crew === -1) return false;
+    
+    // Get the cargo dice (unlocked dice)
+    const cargoDice = diceValues.filter((_, i) => !locked[i]);
+    
+    // Midnight is when both cargo dice are 6s
+    return cargoDice.length === 2 && cargoDice.every(val => val === 6);
+  };
+
+  const rollDice = () => {
+    if (rollsLeft <= 0 || isRolling) return;
+    
+    setIsRolling(true);
+    setShowNoCargo(false);
+    setHasRolled(true);
+    
+    // Animate rolling for 1 second
+    setTimeout(() => {
+      const newDice = dice.map((die, index) => 
+        lockedDice[index] ? die : Math.floor(Math.random() * 6) + 1
+      );
+      
+      setDice(newDice);
+      
+      // Auto-lock ship-captain-crew in order
+      const newLocked = [...lockedDice];
+      const newShipCaptainCrew = { ...shipCaptainCrew };
+      
+      // Auto-lock ship (6) if we don't have one yet
+      if (newShipCaptainCrew.ship === -1) {
+        for (let i = 0; i < 5; i++) {
+          if (!newLocked[i] && newDice[i] === 6) {
+            newLocked[i] = true;
+            newShipCaptainCrew.ship = i;
+            break;
+          }
+        }
+      }
+      
+      // Auto-lock captain (5) if we have ship but no captain yet
+      if (newShipCaptainCrew.ship !== -1 && newShipCaptainCrew.captain === -1) {
+        for (let i = 0; i < 5; i++) {
+          if (!newLocked[i] && newDice[i] === 5) {
+            newLocked[i] = true;
+            newShipCaptainCrew.captain = i;
+            break;
+          }
+        }
+      }
+      
+      // Auto-lock crew (4) if we have ship and captain but no crew yet
+      if (newShipCaptainCrew.ship !== -1 && newShipCaptainCrew.captain !== -1 && newShipCaptainCrew.crew === -1) {
+        for (let i = 0; i < 5; i++) {
+          if (!newLocked[i] && newDice[i] === 4) {
+            newLocked[i] = true;
+            newShipCaptainCrew.crew = i;
+            break;
+          }
+        }
+      }
+      
+      setLockedDice(newLocked);
+      setShipCaptainCrew(newShipCaptainCrew);
+      setRollsLeft(prev => prev - 1);
+      setIsRolling(false);
+      
+      // Show commentary if ship-captain-crew is complete
+      if (newShipCaptainCrew.ship !== -1 && newShipCaptainCrew.captain !== -1 && newShipCaptainCrew.crew !== -1) {
+        const cargoScore = newDice.filter((_, index) => !newLocked[index]).reduce((sum, val) => sum + val, 0);
+        const comment = getCommentary(cargoScore, rollsLeft - 1);
+        setCommentary(comment);
+        setShowCommentary(true);
+        setTimeout(() => setShowCommentary(false), 4000);
+      }
+      
+      // Check for midnight
+      if (checkMidnight(newDice, newLocked, newShipCaptainCrew)) {
+        setShowMidnight(true);
+        setTimeout(() => setShowMidnight(false), 3000);
+      }
+      
+      // Check for no cargo after 3 rolls
+      if (rollsLeft === 1) {
+        const hasShipCaptainCrew = newLocked.filter(Boolean).length === 3;
+        if (!hasShipCaptainCrew) {
+          setTimeout(() => {
+            setShowNoCargo(true);
+            setTimeout(() => setShowNoCargo(false), 2000);
+          }, 500);
+        }
+      }
+    }, 1000);
+  };
+
+  const toggleLock = (index) => {
+    if (isRolling || !hasRolled) return;
+    
+    const value = dice[index];
+    const newLocked = [...lockedDice];
+    const newShipCaptainCrew = { ...shipCaptainCrew };
+    
+    // If already locked, unlock it and clear subsequent locks
+    if (lockedDice[index]) {
+      if (shipCaptainCrew.ship === index) {
+        newShipCaptainCrew.ship = -1;
+        newShipCaptainCrew.captain = -1;
+        newShipCaptainCrew.crew = -1;
+        // Unlock all ship-captain-crew dice
+        for (let i = 0; i < 5; i++) {
+          if (lockedDice[i] && (i === shipCaptainCrew.ship || i === shipCaptainCrew.captain || i === shipCaptainCrew.crew)) {
+            newLocked[i] = false;
+          }
+        }
+      } else if (shipCaptainCrew.captain === index) {
+        newShipCaptainCrew.captain = -1;
+        newShipCaptainCrew.crew = -1;
+        // Unlock captain and crew
+        if (shipCaptainCrew.captain !== -1) newLocked[shipCaptainCrew.captain] = false;
+        if (shipCaptainCrew.crew !== -1) newLocked[shipCaptainCrew.crew] = false;
+      } else if (shipCaptainCrew.crew === index) {
+        newShipCaptainCrew.crew = -1;
+        newLocked[index] = false;
+      }
+    } else {
+      // Trying to lock a die
+      if (value === 6 && shipCaptainCrew.ship === -1) {
+        newLocked[index] = true;
+        newShipCaptainCrew.ship = index;
+      } else if (value === 5 && shipCaptainCrew.ship !== -1 && shipCaptainCrew.captain === -1) {
+        newLocked[index] = true;
+        newShipCaptainCrew.captain = index;
+      } else if (value === 4 && shipCaptainCrew.captain !== -1 && shipCaptainCrew.crew === -1) {
+        newLocked[index] = true;
+        newShipCaptainCrew.crew = index;
+      }
+    }
+    
+    setLockedDice(newLocked);
+    setShipCaptainCrew(newShipCaptainCrew);
+  };
+
+  const reset = () => {
+    setDice(Array(5).fill(0).map(() => Math.floor(Math.random() * 6) + 1));
+    setLockedDice([false, false, false, false, false]);
+    setRollsLeft(3);
+    setIsRolling(false);
+    setShowMidnight(false);
+    setShowNoCargo(false);
+    setCommentary('');
+    setShowCommentary(false);
+    setHasRolled(false);
+    setShipCaptainCrew({ ship: -1, captain: -1, crew: -1 });
+  };
+
+  const getDieColor = (index, value) => {
+    if (lockedDice[index]) {
+      if (shipCaptainCrew.ship === index) return 'from-blue-400 to-blue-600 border-blue-300'; // Ship
+      if (shipCaptainCrew.captain === index) return 'from-red-400 to-red-600 border-red-300'; // Captain
+      if (shipCaptainCrew.crew === index) return 'from-green-400 to-green-600 border-green-300'; // Crew
+    }
+    return 'from-gray-50 to-gray-200 border-gray-300';
+  };
+
+  const getDieDots = (value) => {
+    const positions = {
+      1: ['center'],
+      2: ['top-left', 'bottom-right'],
+      3: ['top-left', 'center', 'bottom-right'],
+      4: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+      5: ['top-left', 'top-right', 'center', 'bottom-left', 'bottom-right'],
+      6: ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right']
+    };
+    
+    return positions[value] || [];
+  };
+
+  const Fireworks = () => (
+    <div className="fixed inset-0 pointer-events-none z-50">
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute animate-ping"
+          style={{
+            left: `${20 + i * 15}%`,
+            top: `${20 + (i % 2) * 30}%`,
+            animationDelay: `${i * 0.2}s`,
+            animationDuration: '1s'
+          }}
+        >
+          <div className="w-4 h-4 bg-yellow-400 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-4 h-4 bg-red-400 rounded-full animate-pulse"></div>
+          <div className="absolute top-0 left-0 w-4 h-4 bg-blue-400 rounded-full animate-bounce"></div>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center p-4">
+      {showMidnight && <Fireworks />}
+      
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-white mb-2">Ship Captain Crew</h1>
+        <p className="text-gray-300">Touch dice to lock • Get 6-5-4 in order</p>
+      </div>
+
+      {/* Dice Container */}
+      <div className="grid grid-cols-5 gap-4 mb-8">
+        {dice.map((value, index) => (
+          <button
+            key={index}
+            onClick={() => toggleLock(index)}
+            disabled={isRolling}
+            className={`
+              relative w-20 h-20 rounded-lg border-2 shadow-lg transform transition-all duration-300
+              ${isRolling && !lockedDice[index] ? 'animate-spin' : 'hover:scale-105'}
+              ${lockedDice[index] ? 'shadow-lg shadow-yellow-500/50 ring-4 ring-yellow-400' : 'hover:shadow-xl'}
+              bg-gradient-to-br ${getDieColor(index, value)}
+              active:scale-95
+            `}
+            style={{
+              transformStyle: 'preserve-3d',
+              transform: lockedDice[index] 
+                ? 'perspective(300px) rotateX(15deg) rotateY(-15deg)' 
+                : 'perspective(300px) rotateX(5deg) rotateY(5deg)',
+              boxShadow: lockedDice[index] 
+                ? '0 0 20px rgba(250, 204, 21, 0.6), 8px 8px 20px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.1)' 
+                : '8px 8px 20px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            {/* Top face illusion */}
+            <div 
+              className="absolute -top-2 -right-2 w-20 h-20 rounded-lg bg-gradient-to-br from-gray-200 to-gray-400 opacity-40"
+              style={{ transform: 'skew(-15deg, -15deg)' }}
+            />
+            
+            {/* Right face illusion */}
+            <div 
+              className="absolute -bottom-2 -right-2 w-20 h-20 rounded-lg bg-gradient-to-br from-gray-300 to-gray-500 opacity-30"
+              style={{ transform: 'skew(15deg, 15deg)' }}
+            />
+            
+            {/* Main face with dots */}
+            <div className="absolute inset-1 grid grid-cols-3 grid-rows-3 gap-1 z-10">
+              {getDieDots(value).map((position, dotIndex) => (
+                <div
+                  key={dotIndex}
+                  className={`
+                    w-2.5 h-2.5 bg-gray-800 rounded-full shadow-sm
+                    ${position === 'top-left' ? 'col-start-1 row-start-1' : ''}
+                    ${position === 'top-right' ? 'col-start-3 row-start-1' : ''}
+                    ${position === 'middle-left' ? 'col-start-1 row-start-2' : ''}
+                    ${position === 'center' ? 'col-start-2 row-start-2' : ''}
+                    ${position === 'middle-right' ? 'col-start-3 row-start-2' : ''}
+                    ${position === 'bottom-left' ? 'col-start-1 row-start-3' : ''}
+                    ${position === 'bottom-right' ? 'col-start-3 row-start-3' : ''}
+                  `}
+                />
+              ))}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Status Messages */}
+      <div className="h-16 mb-4 flex flex-col items-center justify-center">
+        {showMidnight && (
+          <div className="text-yellow-400 text-xl font-bold animate-pulse">
+            🎉 MIDNIGHT! 🎉
+          </div>
+        )}
+        {showNoCargo && (
+          <div className="text-red-400 text-lg font-bold animate-pulse">
+            No Cargo!
+          </div>
+        )}
+        {showCommentary && (
+          <div className="text-cyan-400 text-sm font-medium text-center max-w-md animate-pulse px-4">
+            {commentary}
+          </div>
+        )}
+      </div>
+
+      {/* Ship Captain Crew Status */}
+      <div className="flex gap-4 mb-6 text-sm">
+        <div className={`px-3 py-1 rounded ${shipCaptainCrew.ship !== -1 ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'}`}>
+          Ship (6)
+        </div>
+        <div className={`px-3 py-1 rounded ${shipCaptainCrew.captain !== -1 ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-300'}`}>
+          Captain (5)
+        </div>
+        <div className={`px-3 py-1 rounded ${shipCaptainCrew.crew !== -1 ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'}`}>
+          Crew (4)
+        </div>
+      </div>
+
+      {/* Cargo Score */}
+      {shipCaptainCrew.ship !== -1 && shipCaptainCrew.captain !== -1 && shipCaptainCrew.crew !== -1 && (
+        <div className="mb-6 text-center">
+          <div className="text-gray-300 text-sm mb-1">Cargo Score</div>
+          <div className="text-4xl font-bold text-yellow-400">
+            {dice.filter((_, index) => !lockedDice[index]).reduce((sum, val) => sum + val, 0)}
+          </div>
+        </div>
+      )}
+
+      {/* Controls */}
+      <div className="flex gap-4 items-center">
+        <button
+          onClick={rollDice}
+          disabled={rollsLeft <= 0 || isRolling}
+          className={`
+            px-8 py-3 rounded-lg font-bold text-lg transition-all duration-200
+            ${rollsLeft > 0 && !isRolling
+              ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95'
+              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            }
+          `}
+        >
+          {isRolling ? 'Rolling...' : `Roll (${rollsLeft} left)`}
+        </button>
+        
+        <button
+          onClick={reset}
+          className="px-6 py-3 rounded-lg font-bold bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ShipCaptainCrewRoller;
