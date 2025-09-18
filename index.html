@@ -171,6 +171,7 @@
         let hasRolled = false;
         let isMidnight = false;
         let shipCaptainCrew = { ship: -1, captain: -1, crew: -1 };
+        let previousCargoScore = 0;
 
         // Sarcastic commentary
         const getCommentary = (score, rollsRemaining) => {
@@ -631,13 +632,55 @@
                             showStatusMessage(comment, 'text-cyan-400', 0, true);
                         }
                     }
+
+                    // Check if cargo score decreased (and throw insults)
+                    if (newShipCaptainCrew.ship !== -1 && newShipCaptainCrew.captain !== -1 && newShipCaptainCrew.crew !== -1 && previousCargoScore > 0) {
+                        const currentCargoScore = newDice.filter((_, index) => !newLocked[index]).reduce((sum, val) => sum + val, 0);
+                        if (currentCargoScore < previousCargoScore) {
+                            const insults = [
+                                "Well, that was a mistake! You went from " + previousCargoScore + " to " + currentCargoScore + "!",
+                                "Ouch! " + previousCargoScore + " down to " + currentCargoScore + ". Hope that was worth it!",
+                                "I tried to warn you! " + previousCargoScore + " was better than " + currentCargoScore + "!",
+                                "Greed is a terrible thing. You had " + previousCargoScore + ", now you have " + currentCargoScore + ".",
+                                "From " + previousCargoScore + " to " + currentCargoScore + "... I hope you learned something!",
+                                "That stung! " + previousCargoScore + " was looking pretty good compared to " + currentCargoScore + "!",
+                                "Yikes! Should've stayed at " + previousCargoScore + " instead of " + currentCargoScore + "!"
+                            ];
+                            const insult = insults[Math.floor(Math.random() * insults.length)];
+                            showStatusMessage(insult, 'text-red-400 text-lg font-bold', 0, true);
+                        }
+                        previousCargoScore = currentCargoScore;
+                    } else if (newShipCaptainCrew.ship !== -1 && newShipCaptainCrew.captain !== -1 && newShipCaptainCrew.crew !== -1) {
+                        previousCargoScore = newDice.filter((_, index) => !newLocked[index]).reduce((sum, val) => sum + val, 0);
+                    }
                     
                     // Check for no cargo after 3 rolls
                     if (rollsLeft === 0) {
                         const hasShipCaptainCrew = newLocked.filter(Boolean).length === 3;
                         if (!hasShipCaptainCrew) {
+                            const noCargoInsults = [
+                                "No Cargo! Three rolls and you couldn't even get the basics right!",
+                                "Absolutely nothing! Your ship is sailing empty-handed!",
+                                "Three chances, zero results. That's... impressively bad.",
+                                "No cargo? Did you forget how to roll dice?",
+                                "Empty cargo hold! Your crew is definitely not getting paid.",
+                                "Zero cargo! I've seen better results from a toddler!",
+                                "Nothing! Your ship might as well stay in port.",
+                                "No cargo at all! Time to find a new profession, captain.",
+                                "Three rolls, no cargo. The dice gods have abandoned you!",
+                                "Completely empty! Your maritime career is off to a rough start.",
+                                "No cargo! Even a paper boat would be more successful.",
+                                "Nothing to show for it! Your crew is probably mutinying by now.",
+                                "Zero cargo! I'd say better luck next time, but...",
+                                "No cargo! Your ship's reputation just sank to the bottom!",
+                                "Empty handed! Three rolls and you managed to accomplish nothing!",
+                                "Man, you're worse than Frank",
+                                "Ouch. Are you the Tuesday in Duane's calendar?",
+                                "Gawd you suck."
+                            ];
+                            const insult = noCargoInsults[Math.floor(Math.random() * noCargoInsults.length)];
                             setTimeout(() => {
-                                showStatusMessage('No Cargo!', 'text-red-400 text-lg font-bold', 0, true);
+                                showStatusMessage(insult, 'text-red-400 text-lg font-bold', 0, true);
                             }, 500);
                         }
                     }
@@ -661,6 +704,7 @@
             hasRolled = false;
             isMidnight = false;
             shipCaptainCrew = { ship: -1, captain: -1, crew: -1 };
+            previousCargoScore = 0;
             
             document.getElementById('status-messages').innerHTML = '';
             document.getElementById('fireworks').className = 'fixed inset-0 pointer-events-none z-50 hidden';
