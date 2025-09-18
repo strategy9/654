@@ -169,6 +169,7 @@
         let rollsLeft = 3;
         let isRolling = false;
         let hasRolled = false;
+        let isMidnight = false;
         let shipCaptainCrew = { ship: -1, captain: -1, crew: -1 };
 
         // Sarcastic commentary
@@ -422,30 +423,46 @@
         };
 
         // Show fireworks
-        const showFireworks = () => {
+        const showFireworks = (duration = 3000) => {
             const fireworks = document.getElementById('fireworks');
             fireworks.className = 'fixed inset-0 pointer-events-none z-50';
-            fireworks.innerHTML = Array(6).fill(0).map((_, i) => `
-                <div class="absolute animate-ping" 
-                     style="left: ${20 + i * 15}%; top: ${20 + (i % 2) * 30}%; animation-delay: ${i * 0.2}s; animation-duration: 1s">
-                    <div class="w-4 h-4 bg-yellow-400 rounded-full"></div>
-                    <div class="absolute top-0 left-0 w-4 h-4 bg-red-400 rounded-full animate-pulse"></div>
-                    <div class="absolute top-0 left-0 w-4 h-4 bg-blue-400 rounded-full animate-bounce"></div>
-                </div>
-            `).join('');
             
-            setTimeout(() => {
-                fireworks.className = 'fixed inset-0 pointer-events-none z-50 hidden';
-            }, 3000);
+            // Create more fireworks for midnight
+            const fireworkCount = duration > 3000 ? 12 : 6;
+            const animations = [];
+            
+            for (let i = 0; i < fireworkCount; i++) {
+                animations.push(`
+                    <div class="absolute animate-ping" 
+                         style="left: ${10 + (i * 7)}%; top: ${15 + (i % 3) * 25}%; animation-delay: ${(i * 0.15)}s; animation-duration: 1.5s">
+                        <div class="w-6 h-6 bg-yellow-400 rounded-full"></div>
+                        <div class="absolute top-0 left-0 w-6 h-6 bg-red-400 rounded-full animate-pulse"></div>
+                        <div class="absolute top-0 left-0 w-6 h-6 bg-blue-400 rounded-full animate-bounce"></div>
+                        <div class="absolute top-0 left-0 w-6 h-6 bg-green-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                    </div>
+                `);
+            }
+            
+            fireworks.innerHTML = animations.join('');
+            
+            // Only hide fireworks automatically if not midnight
+            if (duration <= 3000) {
+                setTimeout(() => {
+                    fireworks.className = 'fixed inset-0 pointer-events-none z-50 hidden';
+                }, duration);
+            }
         };
 
         // Show status message
-        const showStatusMessage = (message, className, duration = 4000) => {
+        const showStatusMessage = (message, className, duration = 4000, isPermanent = false) => {
             const statusDiv = document.getElementById('status-messages');
             statusDiv.innerHTML = `<div class="${className} text-sm font-medium text-center max-w-md animate-pulse px-4">${message}</div>`;
-            setTimeout(() => {
-                statusDiv.innerHTML = '';
-            }, duration);
+            
+            if (!isPermanent) {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, duration);
+            }
         };
 
         // Update UI
@@ -457,14 +474,19 @@
             
             // Update roll button
             const rollBtn = document.getElementById('roll-btn');
-            if (rollsLeft <= 0 || isRolling) {
+            if (rollsLeft <= 0 || isRolling || isMidnight) {
                 rollBtn.className = 'px-8 py-3 rounded-lg font-bold text-lg transition-all duration-200 bg-gray-600 text-gray-400 cursor-not-allowed';
                 rollBtn.disabled = true;
             } else {
                 rollBtn.className = 'px-8 py-3 rounded-lg font-bold text-lg transition-all duration-200 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95';
                 rollBtn.disabled = false;
             }
-            rollBtn.textContent = isRolling ? 'Rolling...' : `Roll (${rollsLeft} left)`;
+            
+            if (isMidnight) {
+                rollBtn.textContent = 'MIDNIGHT! Reset to continue';
+            } else {
+                rollBtn.textContent = isRolling ? 'Rolling...' : `Roll (${rollsLeft} left)`;
+            }
             
             // Update ship-captain-crew status
             document.getElementById('ship-status').className = `px-3 py-1 rounded ${shipCaptainCrew.ship !== -1 ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'}`;
@@ -486,7 +508,7 @@
 
         // Toggle lock
         function toggleLock(index) {
-            if (isRolling || !hasRolled) return;
+            if (isRolling || !hasRolled || isMidnight) return;
             
             const value = dice[index];
             const newLocked = [...lockedDice];
@@ -535,7 +557,7 @@
 
         // Roll dice
         function rollDice() {
-            if (rollsLeft <= 0 || isRolling) return;
+            if (rollsLeft <= 0 || isRolling || isMidnight) return;
             
             isRolling = true;
             hasRolled = true;
@@ -595,17 +617,18 @@
                     rollsLeft--;
                     isRolling = false;
                     
-                    // Show commentary if ship-captain-crew is complete
-                    if (newShipCaptainCrew.ship !== -1 && newShipCaptainCrew.captain !== -1 && newShipCaptainCrew.crew !== -1) {
-                        const cargoScore = newDice.filter((_, index) => !newLocked[index]).reduce((sum, val) => sum + val, 0);
-                        const comment = getCommentary(cargoScore, rollsLeft);
-                        showStatusMessage(comment, 'text-cyan-400');
-                    }
-                    
                     // Check for midnight
                     if (checkMidnight(newDice, newLocked, newShipCaptainCrew)) {
-                        showFireworks();
-                        showStatusMessage('🎉 MIDNIGHT! 🎉', 'text-yellow-400 text-xl font-bold', 3000);
+                        isMidnight = true;
+                        showFireworks(10000); // 10 second fireworks!
+                        showStatusMessage('🎉 MIDNIGHT! PERFECT SCORE! 🎉', 'text-yellow-400 text-xl font-bold', 0, true);
+                    } else {
+                        // Show commentary if ship-captain-crew is complete
+                        if (newShipCaptainCrew.ship !== -1 && newShipCaptainCrew.captain !== -1 && newShipCaptainCrew.crew !== -1) {
+                            const cargoScore = newDice.filter((_, index) => !newLocked[index]).reduce((sum, val) => sum + val, 0);
+                            const comment = getCommentary(cargoScore, rollsLeft);
+                            showStatusMessage(comment, 'text-cyan-400');
+                        }
                     }
                     
                     // Check for no cargo after 3 rolls
@@ -634,6 +657,7 @@
             rollsLeft = 3;
             isRolling = false;
             hasRolled = false;
+            isMidnight = false;
             shipCaptainCrew = { ship: -1, captain: -1, crew: -1 };
             
             document.getElementById('status-messages').innerHTML = '';
